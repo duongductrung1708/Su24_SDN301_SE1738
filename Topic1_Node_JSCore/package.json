@@ -1,0 +1,15 @@
+{
+  "name": "topic1_node_jscore",
+  "version": "1.0.0",
+  "description": "Dev node project with JS core",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index"
+  },
+  "keywords": [
+    "nodejs"
+  ],
+  "author": "ThoPN",
+  "license": "ISC"
+}
