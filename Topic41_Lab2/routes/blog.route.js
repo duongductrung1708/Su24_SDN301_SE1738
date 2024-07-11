@@ -16,4 +16,13 @@ blogRouter.put("/edit", BlogController.edit);
 // Delete route
 blogRouter.delete("/delete", BlogController.remove);
 
+// Search by id routes
+blogRouter.get('/search/id/:id', BlogController.searchById);
+
+// Search by name routes
+blogRouter.get('/search/name/:name', BlogController.searchByName);
+
+// Get blog by categoryId routes
+blogRouter.get('/category/:categoryId', BlogController.searchByCategoryId);
+
 module.exports = blogRouter;

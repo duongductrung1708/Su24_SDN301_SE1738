@@ -15,14 +15,14 @@ const commentSchema = new Schema(
       minlength: [2, "Author name must be at least 2 characters long"],
       maxlength: [50, "Author name cannot exceed 50 characters"],
     },
-    createDate: {
-      type: Date,
-      default: Date.now,
-    },
     blog: {
       type: Schema.Types.ObjectId,
       ref: "blog",
-      required: [true, "Blog reference is required"],
+      required: [true, "Blog ID is required"],
+    },
+    createDate: {
+      type: Date,
+      default: Date.now,
     },
   },
   {

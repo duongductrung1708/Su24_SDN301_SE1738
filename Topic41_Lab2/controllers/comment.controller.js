@@ -1,5 +1,6 @@
 const db = require("../models");
 const Comment = db.comment;
+const Blog = db.blog;
 
 // Create action
 async function create(req, res, next) {
@@ -47,7 +48,7 @@ async function getById(req, res, next) {
 // Update action
 async function update(req, res, next) {
   try {
-    const { body, author, blog } = req.body;
+    const { body } = req.body;
 
     if (body && !body.trim()) {
       return res.status(400).json({ error: "Body cannot be empty." });
@@ -55,9 +56,9 @@ async function update(req, res, next) {
 
     const updatedComment = await Comment.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { body },
       { new: true, runValidators: true }
-    );
+    ).populate("blog");
 
     if (!updatedComment) {
       return res.status(404).json({ error: "Comment not found" });
@@ -82,10 +83,36 @@ async function remove(req, res, next) {
   }
 }
 
+// Get comments by Blog ID
+async function getByBlogId(req, res, next) {
+  try {
+    const blogId = req.params.blogId;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
+    const comments = await Comment.find({ blog: blogId });
+
+    const formattedComments = comments.map(comment => ({
+      _id: comment._id,
+      body: comment.body,
+      author: comment.author,
+      createDate: comment.createDate
+    }));
+
+    res.status(200).json(formattedComments);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   create,
   getAll,
   getById,
   update,
   remove,
+  getByBlogId,
 };

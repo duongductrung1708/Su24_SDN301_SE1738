@@ -12,12 +12,6 @@ const blogSchema = new Schema(
       type: String,
       required: [true, "Body is required"],
     },
-    comments: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "comment",
-      },
-    ],
     meta: {
       votes: {
         type: Number,

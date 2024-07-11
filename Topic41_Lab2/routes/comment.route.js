@@ -13,7 +13,13 @@ commentRouter.put("/edit/:id", CommentController.update);
 // List route
 commentRouter.get("/list", CommentController.getAll);
 
+// Get comments by Id routes
+commentRouter.get("/:id", CommentController.getById);
+
 // Delete route
 commentRouter.delete("/delete/:id", CommentController.remove);
+
+// Get comments by blogId routes
+commentRouter.get("/blog/:blogId", CommentController.getByBlogId);
 
 module.exports = commentRouter;

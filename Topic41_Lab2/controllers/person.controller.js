@@ -1,5 +1,6 @@
 const db = require("../models");
 const Person = db.person;
+const Blog = db.blog;
 
 function formatDate(date) {
   const d = new Date(date);
@@ -13,10 +14,9 @@ function formatDate(date) {
   return [day, month, year].join("/");
 }
 
-// Create action
 async function create(req, res, next) {
   try {
-    const { name, dob, blogs } = req.body;
+    const { name, dob } = req.body;
 
     if (!name || !dob) {
       return res
@@ -27,7 +27,6 @@ async function create(req, res, next) {
     const newPerson = new Person({
       name,
       dob,
-      blogs: blogs || [],
     });
 
     await newPerson.save().then((newDoc) => res.status(201).json(newDoc));
@@ -36,7 +35,6 @@ async function create(req, res, next) {
   }
 }
 
-// Edit action
 async function edit(req, res, next) {
   try {
     const { name, dob, blogs } = req.body;
@@ -77,7 +75,7 @@ async function edit(req, res, next) {
     const response = {
       Id: updatedPerson._id,
       FullName: updatedPerson.name,
-      DateOfBirth: updatedPerson.dob,
+      DateOfBirth: formatDate(updatedPerson.dob),
       Blogs: formattedBlogs,
       UpdateAt: updatedPerson.updatedAt,
       CreateAt: updatedPerson.createdAt,
@@ -89,7 +87,6 @@ async function edit(req, res, next) {
   }
 }
 
-// List action
 async function list(req, res, next) {
   try {
     const people = await Person.find({}).populate("blogs");
@@ -101,7 +98,7 @@ async function list(req, res, next) {
     const formattedPeople = people.map((p) => ({
       Id: p._id,
       FullName: p.name,
-      DateOfBirth: p.dob,
+      DateOfBirth: formatDate(p.dob),
       Blogs: p.blogs.map((b) => b.title),
     }));
 
@@ -111,7 +108,6 @@ async function list(req, res, next) {
   }
 }
 
-// Delete action
 async function remove(req, res, next) {
   try {
     const deletedPerson = await Person.findByIdAndRemove(req.params.id);
@@ -126,9 +122,154 @@ async function remove(req, res, next) {
   }
 }
 
+// async function search(req, res, next) {
+//   try {
+//     const { name, id } = req.query;
+
+//     let people;
+//     if (name) {
+//       people = await Person.find({ name: new RegExp(name, 'i') }).populate("blogs");
+//     } else if (id) {
+//       people = await Person.findById(id).populate("blogs");
+//       if (people) people = [people];
+//     } else {
+//       return res.status(400).json({ message: "Name or ID query parameter is required" });
+//     }
+
+//     if (!people || !people.length) {
+//       return res.status(404).json({ message: "No persons found" });
+//     }
+
+//     const formattedPeople = people.map(p => ({
+//       Id: p._id,
+//       FullName: p.name,
+//       DateOfBirth: formatDate(p.dob),
+//       Blogs: p.blogs.map(b => b.title),
+//     }));
+
+//     res.status(200).json(formattedPeople);
+//   } catch (error) {
+//     next(error);
+//   }
+// }
+
+async function searchByName(req, res, next) {
+  try {
+    const { name } = req.params;
+    const people = await Person.find({ name: new RegExp(name, "i") }).populate(
+      "blogs"
+    );
+
+    if (!people.length) {
+      return res.status(404).json({ message: "No persons found" });
+    }
+
+    const formattedPeople = people.map((p) => ({
+      Id: p._id,
+      FullName: p.name,
+      DateOfBirth: formatDate(p.dob),
+      Blogs: p.blogs.map((b) => b.title),
+    }));
+
+    res.status(200).json(formattedPeople);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function searchById(req, res, next) {
+  try {
+    const { id } = req.params;
+    const person = await Person.findById(id).populate("blogs");
+
+    if (!person) {
+      return res.status(404).json({ message: "Person not found" });
+    }
+
+    const formattedPerson = {
+      Id: person._id,
+      FullName: person.name,
+      DateOfBirth: formatDate(person.dob),
+      Blogs: person.blogs.map((b) => b.title),
+    };
+
+    res.status(200).json(formattedPerson);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function filterByDob(req, res, next) {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({ message: "Start date and end date are required" });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const people = await Person.find({
+      dob: { $gte: start, $lte: end },
+    }).populate("blogs");
+
+    if (!people.length) {
+      return res.status(404).json({ message: "No persons found" });
+    }
+
+    const formattedPeople = people.map((p) => ({
+      Id: p._id,
+      FullName: p.name,
+      DateOfBirth: formatDate(p.dob),
+      Blogs: p.blogs.map((b) => b.title),
+    }));
+
+    res.status(200).json(formattedPeople);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getPersonByBlogId(req, res, next) {
+  try {
+    const { blogId } = req.params;
+
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    const person = await Person.findOne({ blogs: blogId });
+
+    if (!person) {
+      return res
+        .status(404)
+        .json({ message: "Person not found for this blog" });
+    }
+
+    const formattedPerson = {
+      Id: person._id,
+      FullName: person.name,
+      DateOfBirth: formatDate(person.dob),
+    };
+
+    res.status(200).json(formattedPerson);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   create,
   edit,
   list,
   remove,
+  filterByDob,
+  searchByName,
+  searchById,
+  getPersonByBlogId,
+  // search,
 };

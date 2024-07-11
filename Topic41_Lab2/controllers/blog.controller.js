@@ -4,7 +4,7 @@ const Blog = db.blog;
 // Create action
 async function create(req, res, next) {
   try {
-    const { title, body, comments, meta, category } = req.body;
+    const { title, body, meta, category } = req.body;
 
     if (!title || !body || !category) {
       return res
@@ -27,7 +27,6 @@ async function create(req, res, next) {
     const newBlog = new Blog({
       title,
       body,
-      comments,
       meta,
       category,
     });
@@ -59,7 +58,7 @@ async function edit(req, res, next) {
     const updatedBlog = await Blog.findByIdAndUpdate(
       req.params.id,
       {
-        $set: { title, body, comments, meta, category },
+        $set: { title, body, meta, category },
       },
       { new: true, runValidators: true }
     );
@@ -77,13 +76,12 @@ async function edit(req, res, next) {
 // List action
 async function list(req, res, next) {
   try {
-    const blogs = await Blog.find({}).populate("comments").populate("category");
+    const blogs = await Blog.find({}).populate("category");
 
     const formattedBlogs = blogs.map((blog) => ({
       Id: blog._id,
       Title: blog.title,
       Body: blog.body,
-      Comments: blog.comments.map((comment) => comment.body),
       Votes: blog.meta.votes,
       Favs: blog.meta.favs,
       Category: blog.category.name,
@@ -110,9 +108,93 @@ async function remove(req, res, next) {
   }
 }
 
+// Search by ID action
+async function searchById(req, res, next) {
+  try {
+    const { id } = req.params;
+    const blog = await Blog.findById(id).populate("category");
+
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found." });
+    }
+
+    const formattedBlog = {
+      Id: blog._id,
+      Title: blog.title,
+      Body: blog.body,
+      Votes: blog.meta.votes,
+      Favs: blog.meta.favs,
+      Category: blog.category.name,
+    };
+
+    res.status(200).json(formattedBlog);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Search by Name action
+async function searchByName(req, res, next) {
+  try {
+    const { name } = req.params;
+    const blogs = await Blog.find({ title: new RegExp(name, "i") }).populate(
+      "category"
+    );
+
+    if (!blogs.length) {
+      return res.status(404).json({ error: "No blogs found." });
+    }
+
+    const formattedBlogs = blogs.map((blog) => ({
+      Id: blog._id,
+      Title: blog.title,
+      Body: blog.body,
+      Votes: blog.meta.votes,
+      Favs: blog.meta.favs,
+      Category: blog.category.name,
+    }));
+
+    res.status(200).json(formattedBlogs);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Search by Category ID action
+async function searchByCategoryId(req, res, next) {
+  try {
+    const { categoryId } = req.params;
+    const blogs = await Blog.find({ category: categoryId }).populate(
+      "category"
+    );
+
+    if (!blogs.length) {
+      return res
+        .status(404)
+        .json({ error: "No blogs found for this category." });
+    }
+
+    const formattedBlogs = blogs.map((blog) => ({
+      Id: blog._id,
+      Title: blog.title,
+      Body: blog.body,
+      Votes: blog.meta.votes,
+      Favs: blog.meta.favs,
+      Category: blog.category.name,
+    }));
+
+    res.status(200).json(formattedBlogs);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   create,
   edit,
   list,
   remove,
+  searchById,
+  searchByName,
+  searchByCategoryId,
 };
