@@ -3,7 +3,7 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const httpErrors = require("http-errors");
 const db = require("./models");
-const { PersonRouter, BlogRouter } = require("./routes");
+const { PersonRouter, BlogRouter, CategoryRouter, CommentRouter } = require("./routes");
 
 require("dotenv").config();
 
@@ -20,6 +20,8 @@ app.get('/', (req, res) => {
 
 app.use("/person", PersonRouter);
 app.use("/blog", BlogRouter);
+app.use("/category", CategoryRouter);
+app.use("/comment", CommentRouter);
 
 
 // Kiem soat cac loi cua Request va Response

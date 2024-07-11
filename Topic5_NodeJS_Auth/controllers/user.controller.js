@@ -22,8 +22,28 @@ async function create(req, res, next){
     }
 }
 
+async function allAccess(req, res, next) {
+    res.send("All access");
+}
+
+async function memberAccess(req, res, next) {
+    res.send("Member action access");
+}
+
+async function modAccess(req, res, next) {
+    res.send("Mod action access");
+}
+
+async function adminAccess(req, res, next) {
+    res.send("Admin action access");
+}
+
 const userController = {
-    create
+    create,
+    allAccess,
+    memberAccess,
+    modAccess,
+    adminAccess,
 };
 
 module.exports = userController;

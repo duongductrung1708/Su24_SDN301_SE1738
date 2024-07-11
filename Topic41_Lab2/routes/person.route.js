@@ -13,4 +13,7 @@ personRouter.put("/edit/:id", PersonController.edit);
 // List route
 personRouter.get("/list", PersonController.list);
 
+// Delete route
+personRouter.delete("/delete", PersonController.remove);
+
 module.exports = personRouter;
