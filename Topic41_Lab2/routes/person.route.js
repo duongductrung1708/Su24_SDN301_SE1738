@@ -31,4 +31,7 @@ personRouter.get("/filterByDob", PersonController.filterByDob);
 // Get person by blog id
 personRouter.get("/blog/:blogId", PersonController.getPersonByBlogId);
 
+// Sort person by name
+personRouter.get("/sortByName", PersonController.sortPersonByName);
+
 module.exports = personRouter;

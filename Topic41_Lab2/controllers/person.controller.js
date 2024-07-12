@@ -244,6 +244,31 @@ async function getPersonByBlogId(req, res, next) {
   }
 }
 
+async function sortPersonByName(req, res, next) {
+  try {
+    const { sort } = req.query;
+    const sortOrder = sort === 'desc' ? -1 : 1;
+
+    const people = await Person.find({}).sort({ name: sortOrder }).populate("blogs");
+
+    if (!people.length) {
+      return res.status(404).json({ message: "No persons found" });
+    }
+
+    const formattedPeople = people.map((person) => ({
+      Id: person._id,
+      FullName: person.name,
+      Email: person.email,
+      DateOfBirth: formatDate(person.dob),
+      Blogs: person.blogs.map((b) => b.title),
+    }));
+
+    res.status(200).json(formattedPeople);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   create,
   edit,
@@ -252,5 +277,6 @@ module.exports = {
   filterByDob,
   searchByName,
   searchById,
-  getPersonByBlogId
+  getPersonByBlogId,
+  sortPersonByName
 };
