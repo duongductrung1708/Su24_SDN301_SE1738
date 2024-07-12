@@ -16,45 +16,47 @@ function formatDate(date) {
 
 async function create(req, res, next) {
   try {
-    const { name, dob } = req.body;
+    const { name, email, dob, blogs } = req.body;
 
-    if (!name || !dob) {
+    if (!name || !email || !dob) {
       return res
         .status(400)
-        .json({ message: "Name and Date of Birth are required" });
+        .json({ message: "Name, email, and Date of Birth are required" });
     }
 
     const newPerson = new Person({
       name,
+      email,
       dob,
+      blogs,
     });
 
     await newPerson.save().then((newDoc) => res.status(201).json(newDoc));
   } catch (error) {
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ message: messages.join(", ") });
+    }
     next(error);
   }
 }
 
 async function edit(req, res, next) {
   try {
-    const { name, dob, blogs } = req.body;
+    const { name, email, dob, blogs } = req.body;
 
-    if (!name && !dob && !blogs) {
+    if (!name && !dob && !email && !blogs) {
       return res.status(400).json({
-        message: "At least one field (name, dob, blogs) is required for update",
+        message:
+          "At least one field (name, dob, email, blogs) is required for update",
       });
     }
 
     const updateFields = {};
-    if (name) {
-      updateFields.name = name;
-    }
-    if (dob) {
-      updateFields.dob = dob;
-    }
-    if (blogs) {
-      updateFields.$addToSet = { blogs };
-    }
+    if (name) updateFields.name = name;
+    if (email) updateFields.email = email;
+    if (dob) updateFields.dob = dob;
+    if (blogs) updateFields.$addToSet = { blogs };
 
     const options = { new: true, runValidators: true };
     const updatedPerson = await Person.findByIdAndUpdate(
@@ -70,19 +72,25 @@ async function edit(req, res, next) {
       return res.status(404).json({ message: "Person not found" });
     }
 
-    const formattedBlogs = updatedPerson.blogs.map((blog) => blog.title);
+    // const formattedBlogs = updatedPerson.blogs.map((blog) => blog.title);
 
     const response = {
       Id: updatedPerson._id,
       FullName: updatedPerson.name,
+      Email: updatedPerson.email,
       DateOfBirth: formatDate(updatedPerson.dob),
-      Blogs: formattedBlogs,
+      Blogs: updatedPerson.blogs,
+      // Blogs: formattedBlogs,
       UpdateAt: updatedPerson.updatedAt,
       CreateAt: updatedPerson.createdAt,
     };
 
     res.status(200).json(response);
   } catch (error) {
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ message: messages.join(", ") });
+    }
     next(error);
   }
 }
@@ -98,6 +106,7 @@ async function list(req, res, next) {
     const formattedPeople = people.map((p) => ({
       Id: p._id,
       FullName: p.name,
+      Email: p.email,
       DateOfBirth: formatDate(p.dob),
       Blogs: p.blogs.map((b) => b.title),
     }));
@@ -122,37 +131,6 @@ async function remove(req, res, next) {
   }
 }
 
-// async function search(req, res, next) {
-//   try {
-//     const { name, id } = req.query;
-
-//     let people;
-//     if (name) {
-//       people = await Person.find({ name: new RegExp(name, 'i') }).populate("blogs");
-//     } else if (id) {
-//       people = await Person.findById(id).populate("blogs");
-//       if (people) people = [people];
-//     } else {
-//       return res.status(400).json({ message: "Name or ID query parameter is required" });
-//     }
-
-//     if (!people || !people.length) {
-//       return res.status(404).json({ message: "No persons found" });
-//     }
-
-//     const formattedPeople = people.map(p => ({
-//       Id: p._id,
-//       FullName: p.name,
-//       DateOfBirth: formatDate(p.dob),
-//       Blogs: p.blogs.map(b => b.title),
-//     }));
-
-//     res.status(200).json(formattedPeople);
-//   } catch (error) {
-//     next(error);
-//   }
-// }
-
 async function searchByName(req, res, next) {
   try {
     const { name } = req.params;
@@ -167,6 +145,7 @@ async function searchByName(req, res, next) {
     const formattedPeople = people.map((p) => ({
       Id: p._id,
       FullName: p.name,
+      Email: p.email,
       DateOfBirth: formatDate(p.dob),
       Blogs: p.blogs.map((b) => b.title),
     }));
@@ -189,6 +168,7 @@ async function searchById(req, res, next) {
     const formattedPerson = {
       Id: person._id,
       FullName: person.name,
+      Email: person.email,
       DateOfBirth: formatDate(person.dob),
       Blogs: person.blogs.map((b) => b.title),
     };
@@ -223,6 +203,7 @@ async function filterByDob(req, res, next) {
     const formattedPeople = people.map((p) => ({
       Id: p._id,
       FullName: p.name,
+      Email: p.email,
       DateOfBirth: formatDate(p.dob),
       Blogs: p.blogs.map((b) => b.title),
     }));
@@ -253,6 +234,7 @@ async function getPersonByBlogId(req, res, next) {
     const formattedPerson = {
       Id: person._id,
       FullName: person.name,
+      Email: person.email,
       DateOfBirth: formatDate(person.dob),
     };
 
@@ -270,6 +252,5 @@ module.exports = {
   filterByDob,
   searchByName,
   searchById,
-  getPersonByBlogId,
-  // search,
+  getPersonByBlogId
 };

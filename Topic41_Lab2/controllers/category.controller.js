@@ -1,17 +1,16 @@
 const db = require("../models");
 const Category = db.category;
-const Blog = db.blog; // Assuming you have a Blog model
 
 // Create action
 async function create(req, res, next) {
   try {
-    const { name, description, blogs } = req.body;
+    const { name, description } = req.body;
 
     if (!name) {
       return res.status(400).json({ error: "Category name is required." });
     }
 
-    const newCategory = new Category({ name, description, blogs });
+    const newCategory = new Category({ name, description });
 
     const savedCategory = await newCategory.save();
     res.status(201).json(savedCategory);
@@ -26,10 +25,7 @@ async function create(req, res, next) {
 // Read action (get all categories)
 async function getAll(req, res, next) {
   try {
-    const categories = await Category.find().populate({
-      path: "blogs",
-      select: "title",
-    });
+    const categories = await Category.find();
     res.status(200).json(categories);
   } catch (error) {
     next(error);
@@ -39,10 +35,7 @@ async function getAll(req, res, next) {
 // Read action (get category by ID)
 async function getById(req, res, next) {
   try {
-    const category = await Category.findById(req.params.id).populate({
-      path: "blogs",
-      select: "title",
-    });
+    const category = await Category.findById(req.params.id);
     if (!category) {
       return res.status(404).json({ error: "Category not found" });
     }
@@ -55,20 +48,10 @@ async function getById(req, res, next) {
 // Update action
 async function update(req, res, next) {
   try {
-    const { blog } = req.body;
-
-    if (!blog) {
-      return res.status(400).json({ error: "Blog ID must be provided." });
-    }
-
     const updatedCategory = await Category.findByIdAndUpdate(
       req.params.id,
-      { $addToSet: { blogs: blog } },
       { new: true, runValidators: true }
-    ).populate({
-      path: "blogs",
-      select: "title",
-    });
+    );
 
     if (!updatedCategory) {
       return res.status(404).json({ error: "Category not found" });

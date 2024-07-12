@@ -22,4 +22,7 @@ commentRouter.delete("/delete/:id", CommentController.remove);
 // Get comments by blogId routes
 commentRouter.get("/blog/:blogId", CommentController.getByBlogId);
 
+// Get comments by personId and blogId routes
+commentRouter.get("/person/:personId/blog/:blogId", CommentController.getCommentByPersonAndBlog);
+
 module.exports = commentRouter;

@@ -41,7 +41,7 @@ async function create(req, res, next) {
 // Edit action
 async function edit(req, res, next) {
   try {
-    const { title, body, comments, meta, category } = req.body;
+    const { title, body, meta, category } = req.body;
 
     if (title && title.length > 20) {
       return res

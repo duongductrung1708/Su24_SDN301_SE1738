@@ -11,7 +11,7 @@ blogRouter.post("/create", BlogController.create);
 blogRouter.get("/list", BlogController.list);
 
 // Edit route
-blogRouter.put("/edit", BlogController.edit);
+blogRouter.put("/edit/:id", BlogController.edit);
 
 // Delete route
 blogRouter.delete("/delete", BlogController.remove);
