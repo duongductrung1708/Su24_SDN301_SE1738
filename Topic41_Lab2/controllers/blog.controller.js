@@ -189,6 +189,97 @@ async function searchByCategoryId(req, res, next) {
   }
 }
 
+// Search by Votes Range action
+async function searchByVotesRange(req, res, next) {
+  try {
+    const { minVotes, maxVotes } = req.query;
+
+    const blogs = await Blog.find({
+      "meta.votes": { $gte: minVotes, $lte: maxVotes },
+    }).populate("category");
+
+    if (!blogs.length) {
+      return res
+        .status(404)
+        .json({ error: "No blogs found for the specified votes range." });
+    }
+
+    const formattedBlogs = blogs.map((blog) => ({
+      Id: blog._id,
+      Title: blog.title,
+      Body: blog.body,
+      Votes: blog.meta.votes,
+      Favs: blog.meta.favs,
+      Category: blog.category.name,
+    }));
+
+    res.status(200).json(formattedBlogs);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Search by Favs Range action
+async function searchByFavsRange(req, res, next) {
+  try {
+    const { minFavs, maxFavs } = req.query;
+
+    const blogs = await Blog.find({
+      "meta.favs": { $gte: Number(minFavs), $lte: Number(maxFavs) },
+    }).populate("category");
+
+    if (!blogs.length) {
+      return res
+        .status(404)
+        .json({ error: "No blogs found for the specified favs range." });
+    }
+
+    const formattedBlogs = blogs.map((blog) => ({
+      Id: blog._id,
+      Title: blog.title,
+      Body: blog.body,
+      Votes: blog.meta.votes,
+      Favs: blog.meta.favs,
+      Category: blog.category.name,
+    }));
+
+    res.status(200).json(formattedBlogs);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Search by Votes and Favs Range action
+async function searchByVotesAndFavsRange(req, res, next) {
+  try {
+    const { minVotes, maxVotes, minFavs, maxFavs } = req.query;
+
+    const blogs = await Blog.find({
+      "meta.votes": { $gte: minVotes, $lte: maxVotes },
+      "meta.favs": { $gte: minFavs, $lte: maxFavs },
+    }).populate("category");
+
+    if (!blogs.length) {
+      return res
+        .status(404)
+        .json({ error: "No blogs found for the specified votes and favs range." });
+    }
+
+    const formattedBlogs = blogs.map((blog) => ({
+      Id: blog._id,
+      Title: blog.title,
+      Body: blog.body,
+      Votes: blog.meta.votes,
+      Favs: blog.meta.favs,
+      Category: blog.category.name,
+    }));
+
+    res.status(200).json(formattedBlogs);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   create,
   edit,
@@ -197,4 +288,7 @@ module.exports = {
   searchById,
   searchByName,
   searchByCategoryId,
+  searchByVotesRange,
+  searchByFavsRange,
+  searchByVotesAndFavsRange,
 };

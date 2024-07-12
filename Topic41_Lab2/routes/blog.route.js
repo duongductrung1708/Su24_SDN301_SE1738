@@ -14,15 +14,24 @@ blogRouter.get("/list", BlogController.list);
 blogRouter.put("/edit/:id", BlogController.edit);
 
 // Delete route
-blogRouter.delete("/delete", BlogController.remove);
+blogRouter.delete("/delete/:id", BlogController.remove);
 
-// Search by id routes
-blogRouter.get('/search/id/:id', BlogController.searchById);
+// Search by id route
+blogRouter.get("/search/id/:id", BlogController.searchById);
 
-// Search by name routes
-blogRouter.get('/search/name/:name', BlogController.searchByName);
+// Search by name route
+blogRouter.get("/search/name/:name", BlogController.searchByName);
 
-// Get blog by categoryId routes
-blogRouter.get('/category/:categoryId', BlogController.searchByCategoryId);
+// Get blog by categoryId route
+blogRouter.get("/category/:categoryId", BlogController.searchByCategoryId);
+
+// Get blog by votes range route
+blogRouter.get("/votesRange", BlogController.searchByVotesRange);
+
+// Get blog by favs range route
+blogRouter.get("/favsRange", BlogController.searchByFavsRange);
+
+// Get blog by both votes and favs range route
+blogRouter.get("/votesAndFavsRange", BlogController.searchByVotesAndFavsRange);
 
 module.exports = blogRouter;
