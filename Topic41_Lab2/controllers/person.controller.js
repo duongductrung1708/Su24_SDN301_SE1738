@@ -52,16 +52,13 @@ async function edit(req, res, next) {
       });
     }
 
-    const updateFields = {};
-    if (name) updateFields.name = name;
-    if (email) updateFields.email = email;
-    if (dob) updateFields.dob = dob;
-    if (blogs) updateFields.$addToSet = { blogs };
-
     const options = { new: true, runValidators: true };
     const updatedPerson = await Person.findByIdAndUpdate(
       req.params.id,
-      updateFields,
+      {
+        $set: { name, email, dob },
+        $addToSet: { blogs }
+      },
       options
     ).populate({
       path: "blogs",

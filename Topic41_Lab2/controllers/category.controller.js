@@ -50,6 +50,9 @@ async function update(req, res, next) {
   try {
     const updatedCategory = await Category.findByIdAndUpdate(
       req.params.id,
+      {
+        $set: { name: req.body.name, description: req.body.description }
+      },
       { new: true, runValidators: true }
     );
 

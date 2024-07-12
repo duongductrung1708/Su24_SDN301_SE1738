@@ -90,7 +90,9 @@ async function update(req, res, next) {
 
     const updatedComment = await Comment.findByIdAndUpdate(
       req.params.id,
-      { body },
+      {
+        $set: { body: req.body.body, author: req.body.author, blog: req.body.blog }
+      },
       { new: true, runValidators: true }
     )
       .populate("blog")
